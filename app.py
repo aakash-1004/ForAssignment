@@ -58,6 +58,25 @@ def submit():
 def success():
     return render_template("success.html")
 
+@app.route("/submittodoitem", methods=["POST"])
+def submit_todo():
+    item_name = request.form.get("itemName", "").strip()
+    item_description = request.form.get("itemDescription", "").strip()
+
+    if not item_name or not item_description:
+        return jsonify({"error": "itemName and itemDescription are required"}), 400
+
+    try:
+        todo_collection = db["todos"]
+        document = {
+            "itemName": item_name,
+            "itemDescription": item_description
+        }
+        todo_collection.insert_one(document)
+        return jsonify({"message": "Todo item saved successfully"}), 201
+
+    except PyMongoError as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
